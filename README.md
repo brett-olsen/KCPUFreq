@@ -45,11 +45,9 @@ chmod +x ./*.sh
 # 4. Install into Plasma
 ./install_widget.sh
 
-# 5. Restart plasmashell
-kquitapp6 plasmashell && kstart6 plasmashell
 ```
 
-Then right-click your desktop → **Add Widgets** → search **KCPUFreq**.
+If the widget does not show, you may need to either restart your plasma desktop, or simply logout/back in. Then right-click your desktop → **Add Widgets** → search **KCPUFreq**.
 
 ## Update
 
