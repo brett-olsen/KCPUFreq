@@ -65,13 +65,26 @@ kquitapp6 plasmashell && kstart6 plasmashell
 kpackagetool6 --type Plasma/Applet --remove org.kde.plasma.kcpufreq
 ```
 
+## Overview Tab
+
+- **Power Profile** — powersave, balanced, performance 
+- **Governor** — conservative, ondemand, userspace, powersave, performance, scchedutil 
+- **Minimum** — slider for the minimum CPU speed in Mhz
+- **Maximum** — slider for the maximum CPU speed in Mhz
+- **Cores Online** — slider to set the number of active cores
+- **Turbo Boost** — slider to toggle turbo on/off
+- **Remember Setttings** — toggle to save/restore application settings on widget load
+some options may vary, depending on your CPU, Kernel, etc
+
 ## Options Tab
 
 - **Titlebar** — font family, size, and CPU speed toggle with live preview
 - **Application** — font family and size for all widget text
 - **Tint Color** — 10 colour presets applied to accents, bars, and graph
-- **Graph** — Large (full-width below both columns) or Small (right column)
 - **Polling** — refresh rate 1–30s
+- **Page Background** — choose between solid, or system
+- **Graph** — Large (full-width below both columns) or Small (embedded right column)
+
 
 ## Author
 
