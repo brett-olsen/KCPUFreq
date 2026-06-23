@@ -34,16 +34,18 @@ A KDE Plasma 6 widget for CPU frequency and power management on Arch Linux / Gar
 git clone https://github.com/brett-olsen/KCPUFreq.git
 cd KCPUFreq
 
-# 1. Install backend tools and polkit rules (run once, requires sudo)
+# 1. Make the helper scripts executable
+chmod +x ./*.sh
+# 2. Install backend tools and polkit rules (run once, requires sudo)
 ./install_cpufreq_backend.sh
 
-# 2. Build the .plasmoid package
+# 3. Build the .plasmoid package
 ./build_widget.sh
 
-# 3. Install into Plasma
+# 4. Install into Plasma
 ./install_widget.sh
 
-# 4. Restart plasmashell
+# 5. Restart plasmashell
 kquitapp6 plasmashell && kstart6 plasmashell
 ```
 
