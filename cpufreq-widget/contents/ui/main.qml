@@ -974,8 +974,24 @@ PlasmoidItem {
             Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a"; Layout.topMargin: 10; Layout.bottomMargin: 6 }
             RowLayout {
                 Layout.fillWidth: true; Layout.bottomMargin: 6; spacing: 6
-                Text { text: "☺"; color: "#44bb44"; font.pixelSize: root.appFontSize+4 }
-                Text { text: "SYSTEM STATUS OK"; color: "#44bb44"; font.bold: true; font.pixelSize: root.appFontSize }
+
+                // Status: hot = temp > 85°C, stressed = load > 75% or temp > 70°C
+                property bool isHot:      root.cpuTemp > 80
+                property bool isStressed: !isHot && (root.loadPercent > 60 || root.cpuTemp > 70)
+
+                Text {
+                    text: parent.isHot ? "☠" : parent.isStressed ? "☹" : "☺"
+                    color: parent.isHot ? "#ff4444" : parent.isStressed ? "#ffaa00" : "#44bb44"
+                    font.pixelSize: root.appFontSize + 4
+                    Behavior on color { ColorAnimation { duration: 500 } }
+                }
+                Text {
+                    text: parent.isHot ? "ITS GETTING HOT IN HERE" : parent.isStressed ? "UNDER A LITTLE STRESS" : "SYSTEM STATUS OK"
+                    color: parent.isHot ? "#ff4444" : parent.isStressed ? "#ffaa00" : "#44bb44"
+                    font.bold: true
+                    font.pixelSize: root.appFontSize
+                    Behavior on color { ColorAnimation { duration: 500 } }
+                }
                 Item { Layout.fillWidth: true }
                 Text {
                     visible: root.coreFreqs.length > 0 && root.coreFreqs[0] > 0
