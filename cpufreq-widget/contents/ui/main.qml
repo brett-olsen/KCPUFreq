@@ -53,7 +53,8 @@ PlasmoidItem {
     property string appFontFamily:    "Noto Sans"
     property int    appFontSize:      11
     property color  tintColor:        "#5588ff"
-    property string graphSize:        "large"   // "large" or "small"
+    property string graphSize:        "large"
+    property string bgStyle:          "solid"   // "solid" or "system"
 
     // ── graph history (updated only on poll tick) ─────────────────────────────
     property real   cpuTemp:          0
@@ -99,6 +100,7 @@ PlasmoidItem {
         property alias tintColor:        root.tintColor
         property alias rememberSettings: root.rememberSettings
         property alias graphSize:        root.graphSize
+        property alias bgStyle:          root.bgStyle
     }
 
     // ── DataSource: read ──────────────────────────────────────────────────────
@@ -383,7 +385,7 @@ PlasmoidItem {
         width: 460
         height: Math.min(outerCol.implicitHeight + 24, 740)
 
-        Rectangle { anchors.fill: parent; color: "#2a2a2a"; radius: 8 }
+        Rectangle { anchors.fill: parent; color: root.bgStyle === "solid" ? "#2a2a2a" : "transparent"; radius: 8 }
 
         ColumnLayout {
             id: outerCol
@@ -832,40 +834,6 @@ PlasmoidItem {
                     QQC2.CheckBox { checked: root.showFreqInTitle; onCheckedChanged: root.showFreqInTitle = checked }
                 }
 
-                // Live preview — shows icon + name + freq only
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: root.titleFontSize + 28
-                    color: "#1a1a1a"; radius: 5
-
-                    RowLayout {
-                        anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 10; rightMargin: 10 }
-                        spacing: 8
-
-                        Canvas {
-                            id: prevIcon
-                            width: root.titleFontSize + 6
-                            height: root.titleFontSize + 6
-                            onPaint: root.paintIcon(getContext("2d"), width, height, root.tintColor)
-                            Connections { target: root; function onTitleFontSizeChanged() { prevIcon.requestPaint() } }
-                            Connections { target: root; function onTintColorChanged() { prevIcon.requestPaint() } }
-                        }
-                        Text {
-                            text: {
-                                var freq = (root.showFreqInTitle && root.coreFreqs.length > 0 && root.coreFreqs[0] > 0)
-                                    ? "  " + (root.coreFreqs[0] >= 1000
-                                        ? (root.coreFreqs[0]/1000).toFixed(2) + " GHz"
-                                        : root.coreFreqs[0].toFixed(0) + " MHz")
-                                    : ""
-                                return "KCPUFreq" + freq
-                            }
-                            color: "white"; font.bold: true
-                            font.family: root.titleFontFamily
-                            font.pixelSize: root.titleFontSize + 6
-                        }
-                        Item { Layout.fillWidth: true }
-                    }
-                }
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
 
@@ -958,6 +926,26 @@ PlasmoidItem {
                 }
 
                 Item { height: 4 }
+
+                Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
+
+                // ── Page Background ───────────────────────────────────────
+                Text { text: "Page Background"; color: root.tintColor; font.bold: true; font.pixelSize: root.appFontSize+1 }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Text { text: "Style"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; Layout.minimumWidth: 110 }
+                    Item { Layout.fillWidth: true }
+                    QQC2.ComboBox {
+                        implicitWidth: 120; font.pixelSize: root.appFontSize
+                        model: ["Solid", "System"]
+                        currentIndex: root.bgStyle === "system" ? 1 : 0
+                        contentItem: Text { text: parent.displayText; color: "white"; font.pixelSize: root.appFontSize; verticalAlignment: Text.AlignVCenter; leftPadding: 6 }
+                        background: Rectangle { color: "#3a3a3a"; border.color: "#555"; border.width: 1; radius: 3 }
+                        popup.background: Rectangle { color: "#222"; border.color: "#555"; radius: 3 }
+                        onActivated: function(i) { root.bgStyle = i === 1 ? "system" : "solid" }
+                    }
+                }
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
 
