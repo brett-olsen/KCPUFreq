@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- CPU chip body -->
+  <rect x="16" y="16" width="32" height="32" rx="3" ry="3" stroke="white" stroke-width="2.5" fill="none"/>
+  <!-- Inner die -->
+  <rect x="22" y="22" width="20" height="20" rx="1.5" ry="1.5" stroke="white" stroke-width="1.5" fill="none"/>
+
+  <!-- Top pins -->
+  <line x1="23" y1="16" x2="23" y2="10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="30" y1="16" x2="30" y2="10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="37" y1="16" x2="37" y2="10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="44" y1="16" x2="44" y2="10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Bottom pins -->
+  <line x1="23" y1="48" x2="23" y2="54" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="30" y1="48" x2="30" y2="54" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="37" y1="48" x2="37" y2="54" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="44" y1="48" x2="44" y2="54" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Left pins -->
+  <line x1="16" y1="23" x2="10" y2="23" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="16" y1="30" x2="10" y2="30" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="16" y1="37" x2="10" y2="37" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="16" y1="44" x2="10" y2="44" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Right pins -->
+  <line x1="48" y1="23" x2="54" y2="23" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="48" y1="30" x2="54" y2="30" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="48" y1="37" x2="54" y2="37" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="48" y1="44" x2="54" y2="44" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Frequency wave inside die -->
+  <polyline
+    points="23,32 25.5,32 27,26 29,38 31,26 33,38 35,26 37,38 39,32 41,32"
+    stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
