@@ -75,7 +75,7 @@ if [[ -d "${PLASMOID_DIR}" ]]; then
 fi
 
 info "Installing fresh..."
-kpackagetool6 --type Plasma/Applet --install "${PLASMOID}" && ok "Widget installed"
+kpackagetool6 --type Plasma/Applet --install "${PLASMOID}" 2>/dev/null && ok "Widget installed"
 
 # ── 5. Install custom icon ───────────────────────────────────────────────────
 step "Installing KCpuFreq icon..."
@@ -109,16 +109,11 @@ echo ""
 echo -e "${CYAN}─────────────────────────────────────────────────────${NC}"
 echo -e "${BOLD}Installation complete!${NC}"
 echo ""
-echo -e "  ${BOLD}Restart plasmashell to activate the widget:${NC}"
-echo ""
-echo -e "     ${CYAN}kquitapp6 plasmashell && kstart6 plasmashell${NC}"
-echo ""
-echo -e "  ${YELLOW}Note:${NC} This is safe to run — plasmashell will relaunch"
-echo "  automatically and restore your desktop layout."
+echo -e "  ${BOLD}Log out and log back in to activate the widget.${NC}"
 echo ""
 echo -e "  ${BOLD}Then add the widget:${NC}"
 echo "   1. Right-click the desktop → Add Widgets"
-echo "   2. Search for 'KCpuFreq'"
+echo "   2. Search for 'KCPUFreq'"
 echo "   3. Drag it to your panel or desktop"
 echo ""
 echo -e "  ${YELLOW}Tip:${NC} First use may prompt for pkexec password."
