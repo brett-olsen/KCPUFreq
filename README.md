@@ -78,4 +78,4 @@ kpackagetool6 --type Plasma/Applet --remove org.kde.plasma.kcpufreq
 
 ## License
 
-GPL-3.0
+MIT
