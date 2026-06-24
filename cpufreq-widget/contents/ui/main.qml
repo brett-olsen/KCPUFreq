@@ -57,10 +57,16 @@ PlasmoidItem {
     property string bgStyle:          "solid"   // "solid" or "system"
 
     // Derived background colors — change with bgStyle
-    readonly property color bgPanel:   bgStyle === "solid" ? "#cc1e1e1e" : "#661e1e1e"  // branding/graph boxes
-    readonly property color bgTab:     bgStyle === "solid" ? "#2a2a2a"   : "#552a2a2a"  // active tab
-    readonly property color bgTabInactive: bgStyle === "solid" ? "#222222" : "#33222222"
-    readonly property color bgDivider: bgStyle === "solid" ? "#3a3a3a"   : "#553a3a3a"
+    readonly property color bgPanel:       bgStyle === "solid" ? "#1e1e1e"   : Qt.rgba(0.12, 0.12, 0.12, 0.35)
+    readonly property color bgTab:         bgStyle === "solid" ? "#2a2a2a"   : Qt.rgba(0.16, 0.16, 0.16, 0.35)
+    readonly property color bgTabInactive: bgStyle === "solid" ? "#222222"   : Qt.rgba(0.13, 0.13, 0.13, 0.15)
+    readonly property color bgDivider:     bgStyle === "solid" ? "#3a3a3a"   : "transparent"
+    readonly property color bgControl:     bgStyle === "solid" ? "#3a3a3a"   : Qt.rgba(0.22, 0.22, 0.22, 0.55)
+    readonly property color bgPopup:       bgStyle === "solid" ? "#222222"   : Qt.rgba(0.13, 0.13, 0.13, 0.85)
+    readonly property color bgTrack:       bgStyle === "solid" ? "#333333"   : Qt.rgba(0.20, 0.20, 0.20, 0.5)
+    readonly property color bgTurboOff:    bgStyle === "solid" ? "#444444"   : Qt.rgba(0.27, 0.27, 0.27, 0.6)
+    readonly property color bgTurboOn:     bgStyle === "solid" ? "#336622"   : Qt.rgba(0.20, 0.40, 0.13, 0.73)
+    readonly property color bgBorder:      bgStyle === "solid" ? "#555555"   : Qt.rgba(0.33, 0.33, 0.33, 0.25)
 
     // ── graph history (updated only on poll tick) ─────────────────────────────
     property real   cpuTemp:          0
@@ -473,7 +479,7 @@ PlasmoidItem {
                                     color: online ? root.tintColor : "#444"; font.pixelSize: root.appFontSize-1; font.family: root.appFontFamily
                                 }
                                 Rectangle {
-                                    width: 32; height: 3; color: "#333"; radius: 1
+                                    width: 32; height: 3; color: root.bgTrack; radius: 1
                                     Rectangle {
                                         width: parent.width * (root.coreFreqs[index]||0) / (root.freqMax||1)
                                         height: parent.height; color: online ? root.tintColor : "#333"; radius: 1
@@ -492,7 +498,7 @@ PlasmoidItem {
                         Text { text: root.loadPercent.toFixed(0)+"%"; color: "#aaaaaa"; font.pixelSize: root.appFontSize }
                     }
                     Rectangle {
-                        Layout.fillWidth: true; height: 5; color: "#333"; radius: 2
+                        Layout.fillWidth: true; height: 5; color: root.bgTrack; radius: 2
                         Rectangle {
                             width: parent.width * Math.min(root.loadPercent/100, 1)
                             height: parent.height; color: root.tintColor; radius: 2
@@ -508,7 +514,7 @@ PlasmoidItem {
                         Text { text: root.memPercent.toFixed(1)+"%"; color: "#aaaaaa"; font.pixelSize: root.appFontSize }
                     }
                     Rectangle {
-                        Layout.fillWidth: true; height: 5; color: "#333"; radius: 2
+                        Layout.fillWidth: true; height: 5; color: root.bgTrack; radius: 2
                         Rectangle {
                             width: parent.width * Math.min(root.memPercent/100, 1)
                             height: parent.height; color: root.tintColor; radius: 2
@@ -578,13 +584,14 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         Text { text: "Power Profile"; color: "#888"; font.pixelSize: root.appFontSize; font.family: root.appFontFamily }
                         Item { Layout.fillWidth: true }
-                        QQC2.ComboBox {
+                        QQC2.ComboBox { flat: true
                             implicitWidth: 128; font.pixelSize: root.appFontSize
                             model: root.profiles.length > 0 ? root.profiles : ["powersave","balanced","performance"]
                             currentIndex: Math.max(0, model.indexOf(root.activeGovernor))
                             contentItem: Text { text: parent.displayText; color: "white"; font.pixelSize: root.appFontSize; verticalAlignment: Text.AlignVCenter; leftPadding: 6 }
-                            background: Rectangle { color: "#3a3a3a"; border.color: "#555"; border.width: 1; radius: 3 }
-                            popup.background: Rectangle { color: "#222"; border.color: "#555"; radius: 3 }
+                            palette.button: root.bgControl
+                            background: Rectangle { color: "transparent"; border.color: root.bgBorder; border.width: 1; radius: 3 }
+                            popup.background: Rectangle { color: root.bgPopup; border.color: root.bgBorder; radius: 3 }
                             onActivated: function(i) { applyGovernor(model[i]) }
                         }
                     }
@@ -594,13 +601,14 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         Text { text: "Governor"; color: "#888"; font.pixelSize: root.appFontSize; font.family: root.appFontFamily }
                         Item { Layout.fillWidth: true }
-                        QQC2.ComboBox {
+                        QQC2.ComboBox { flat: true
                             implicitWidth: 128; font.pixelSize: root.appFontSize
                             model: root.governors.length > 0 ? root.governors : ["schedutil","powersave","performance","ondemand","conservative","userspace"]
                             currentIndex: Math.max(0, model.indexOf(root.activeGovernor))
                             contentItem: Text { text: parent.displayText; color: "white"; font.pixelSize: root.appFontSize; verticalAlignment: Text.AlignVCenter; leftPadding: 6 }
-                            background: Rectangle { color: "#3a3a3a"; border.color: "#555"; border.width: 1; radius: 3 }
-                            popup.background: Rectangle { color: "#222"; border.color: "#555"; radius: 3 }
+                            palette.button: root.bgControl
+                            background: Rectangle { color: "transparent"; border.color: root.bgBorder; border.width: 1; radius: 3 }
+                            popup.background: Rectangle { color: root.bgPopup; border.color: root.bgBorder; radius: 3 }
                             onActivated: function(i) { applyGovernor(model[i]) }
                         }
                     }
@@ -683,7 +691,7 @@ PlasmoidItem {
                         Rectangle {
                             width: 56; height: root.appFontSize+10; radius: 4
                             opacity: root.applyingTurbo ? 0.4 : 1.0
-                            color: root.turboEnabled ? "#336622" : "#444"
+                            color: root.turboEnabled ? root.bgTurboOn : root.bgTurboOff
                             border.color: root.turboEnabled ? "#44aa33" : "#555"
                             Behavior on color { ColorAnimation { duration: 200 } }
                             Text { anchors.centerIn: parent; text: root.turboEnabled?"ON":"OFF"; color: root.turboEnabled?"#88ff66":"#888"; font.bold: true; font.pixelSize: root.appFontSize }
@@ -804,7 +812,7 @@ PlasmoidItem {
                     Layout.fillWidth: true
                     Text { text: "Font"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; Layout.minimumWidth: 110 }
                     Item { Layout.fillWidth: true }
-                    QQC2.ComboBox {
+                    QQC2.ComboBox { flat: true
                         id: titleFontCombo
                         implicitWidth: 170
                         model: root.fontList
@@ -814,8 +822,9 @@ PlasmoidItem {
                         }
                         font.pixelSize: root.appFontSize
                         contentItem: Text { text: parent.displayText; color: "white"; font.pixelSize: root.appFontSize; verticalAlignment: Text.AlignVCenter; leftPadding: 6 }
-                        background: Rectangle { color: "#3a3a3a"; border.color: "#555"; border.width: 1; radius: 3 }
-                        popup.background: Rectangle { color: "#222"; border.color: "#555"; radius: 3 }
+                        palette.button: root.bgControl
+                            background: Rectangle { color: "transparent"; border.color: root.bgBorder; border.width: 1; radius: 3 }
+                        popup.background: Rectangle { color: root.bgPopup; border.color: root.bgBorder; radius: 3 }
                         onActivated: function(i) { root.titleFontFamily = root.fontList[i] }
                     }
                 }
@@ -850,7 +859,7 @@ PlasmoidItem {
                     Layout.fillWidth: true
                     Text { text: "Font"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; Layout.minimumWidth: 110 }
                     Item { Layout.fillWidth: true }
-                    QQC2.ComboBox {
+                    QQC2.ComboBox { flat: true
                         id: appFontCombo
                         implicitWidth: 170
                         model: root.fontList
@@ -860,8 +869,9 @@ PlasmoidItem {
                         }
                         font.pixelSize: root.appFontSize
                         contentItem: Text { text: parent.displayText; color: "white"; font.pixelSize: root.appFontSize; verticalAlignment: Text.AlignVCenter; leftPadding: 6 }
-                        background: Rectangle { color: "#3a3a3a"; border.color: "#555"; border.width: 1; radius: 3 }
-                        popup.background: Rectangle { color: "#222"; border.color: "#555"; radius: 3 }
+                        palette.button: root.bgControl
+                            background: Rectangle { color: "transparent"; border.color: root.bgBorder; border.width: 1; radius: 3 }
+                        popup.background: Rectangle { color: root.bgPopup; border.color: root.bgBorder; radius: 3 }
                         onActivated: function(i) { root.appFontFamily = root.fontList[i] }
                     }
                 }
@@ -942,13 +952,14 @@ PlasmoidItem {
                     Layout.fillWidth: true
                     Text { text: "Style"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; Layout.minimumWidth: 110 }
                     Item { Layout.fillWidth: true }
-                    QQC2.ComboBox {
+                    QQC2.ComboBox { flat: true
                         implicitWidth: 120; font.pixelSize: root.appFontSize
                         model: ["Solid", "System"]
                         currentIndex: root.bgStyle === "system" ? 1 : 0
                         contentItem: Text { text: parent.displayText; color: "white"; font.pixelSize: root.appFontSize; verticalAlignment: Text.AlignVCenter; leftPadding: 6 }
-                        background: Rectangle { color: "#3a3a3a"; border.color: "#555"; border.width: 1; radius: 3 }
-                        popup.background: Rectangle { color: "#222"; border.color: "#555"; radius: 3 }
+                        palette.button: root.bgControl
+                            background: Rectangle { color: "transparent"; border.color: root.bgBorder; border.width: 1; radius: 3 }
+                        popup.background: Rectangle { color: root.bgPopup; border.color: root.bgBorder; radius: 3 }
                         onActivated: function(i) { root.bgStyle = i === 1 ? "system" : "solid" }
                     }
                 }
@@ -962,13 +973,14 @@ PlasmoidItem {
                     Layout.fillWidth: true
                     Text { text: "Graph size"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; Layout.minimumWidth: 110 }
                     Item { Layout.fillWidth: true }
-                    QQC2.ComboBox {
+                    QQC2.ComboBox { flat: true
                         implicitWidth: 120; font.pixelSize: root.appFontSize
                         model: ["Large", "Small"]
                         currentIndex: root.graphSize === "small" ? 1 : 0
                         contentItem: Text { text: parent.displayText; color: "white"; font.pixelSize: root.appFontSize; verticalAlignment: Text.AlignVCenter; leftPadding: 6 }
-                        background: Rectangle { color: "#3a3a3a"; border.color: "#555"; border.width: 1; radius: 3 }
-                        popup.background: Rectangle { color: "#222"; border.color: "#555"; radius: 3 }
+                        palette.button: root.bgControl
+                            background: Rectangle { color: "transparent"; border.color: root.bgBorder; border.width: 1; radius: 3 }
+                        popup.background: Rectangle { color: root.bgPopup; border.color: root.bgBorder; radius: 3 }
                         onActivated: function(i) { root.graphSize = i === 1 ? "small" : "large" }
                     }
                 }
