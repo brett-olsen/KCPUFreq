@@ -2,7 +2,7 @@
 
 A KDE Plasma 6 widget for CPU frequency and power management on Arch Linux / Garuda.
 
-<img width="584" height="770" alt="image" src="https://github.com/user-attachments/assets/6d4418a5-b51b-487f-8537-f064e80092bb" />
+<img width="586" height="762" alt="image" src="https://github.com/user-attachments/assets/39d1856c-e4c2-477a-b98e-958646a84840" />
 
 
 ## Features
