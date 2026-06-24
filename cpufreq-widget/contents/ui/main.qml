@@ -56,6 +56,12 @@ PlasmoidItem {
     property string graphSize:        "large"
     property string bgStyle:          "solid"   // "solid" or "system"
 
+    // Derived background colors — change with bgStyle
+    readonly property color bgPanel:   bgStyle === "solid" ? "#cc1e1e1e" : "#661e1e1e"  // branding/graph boxes
+    readonly property color bgTab:     bgStyle === "solid" ? "#2a2a2a"   : "#552a2a2a"  // active tab
+    readonly property color bgTabInactive: bgStyle === "solid" ? "#222222" : "#33222222"
+    readonly property color bgDivider: bgStyle === "solid" ? "#3a3a3a"   : "#553a3a3a"
+
     // ── graph history (updated only on poll tick) ─────────────────────────────
     property real   cpuTemp:          0
     readonly property int graphPoints: 60
@@ -405,7 +411,7 @@ PlasmoidItem {
                         id: tb
                         property bool active: outerCol.activeTab === index
                         Layout.fillWidth: true; height: root.appFontSize + 16
-                        color: active ? "#2a2a2a" : "#222"
+                        color: active ? root.bgTab : root.bgTabInactive
                         Rectangle {
                             anchors.bottom: parent.bottom; width: parent.width; height: 2
                             color: tb.active ? root.tintColor : "transparent"
@@ -420,7 +426,7 @@ PlasmoidItem {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a"; Layout.bottomMargin: 10 }
+            Rectangle { Layout.fillWidth: true; height: 1; color: root.bgDivider; Layout.bottomMargin: 10 }
 
             // ══════════════════════════════════════════════════════════════
             // OVERVIEW TAB
@@ -523,7 +529,7 @@ PlasmoidItem {
                         id: brandingBlock
                         Layout.fillWidth: true
                         height: brandingContent.implicitHeight + 24
-                        color: "#1e1e1e"; radius: 6
+                        color: root.bgPanel; radius: 6
 
                         ColumnLayout {
                             id: brandingContent
@@ -599,7 +605,7 @@ PlasmoidItem {
                         }
                     }
 
-                    Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
+                    Rectangle { Layout.fillWidth: true; height: 1; color: root.bgDivider }
 
                     // Minimum freq
                     RowLayout {
@@ -712,7 +718,7 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         height: 150
                         visible: root.graphSize === "small"
-                        color: "#1e1e1e"; radius: 6
+                        color: root.bgPanel; radius: 6
 
                         // Legend inside, top-left
                         Column {
@@ -774,7 +780,7 @@ PlasmoidItem {
 
                 Rectangle {
                     anchors { left: graphLegend.right; leftMargin: 6; right: parent.right; top: parent.top; bottom: parent.bottom }
-                    color: "#1e1e1e"; radius: 6
+                    color: root.bgPanel; radius: 6
                     Canvas {
                         id: graphCanvas
                         anchors { fill: parent; margins: 6 }
@@ -835,7 +841,7 @@ PlasmoidItem {
                 }
 
 
-                Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
+                Rectangle { Layout.fillWidth: true; height: 1; color: root.bgDivider }
 
                 // ── Application ───────────────────────────────────────────
                 Text { text: "Application"; color: root.tintColor; font.bold: true; font.pixelSize: root.appFontSize+1 }
@@ -873,7 +879,7 @@ PlasmoidItem {
                     Text { text: root.appFontSize+"px"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; Layout.minimumWidth: 36 }
                 }
 
-                Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
+                Rectangle { Layout.fillWidth: true; height: 1; color: root.bgDivider }
 
                 // ── Tint Color ────────────────────────────────────────────
                 Text { text: "Tint Color"; color: root.tintColor; font.bold: true; font.pixelSize: root.appFontSize+1 }
@@ -907,7 +913,7 @@ PlasmoidItem {
                     }
                 }
 
-                Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
+                Rectangle { Layout.fillWidth: true; height: 1; color: root.bgDivider }
 
                 // ── Polling ───────────────────────────────────────────────
                 Text { text: "Polling"; color: root.tintColor; font.bold: true; font.pixelSize: root.appFontSize+1 }
@@ -927,7 +933,7 @@ PlasmoidItem {
 
                 Item { height: 4 }
 
-                Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
+                Rectangle { Layout.fillWidth: true; height: 1; color: root.bgDivider }
 
                 // ── Page Background ───────────────────────────────────────
                 Text { text: "Page Background"; color: root.tintColor; font.bold: true; font.pixelSize: root.appFontSize+1 }
@@ -947,7 +953,7 @@ PlasmoidItem {
                     }
                 }
 
-                Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a" }
+                Rectangle { Layout.fillWidth: true; height: 1; color: root.bgDivider }
 
                 // ── Graph ─────────────────────────────────────────────────
                 Text { text: "Graph"; color: root.tintColor; font.bold: true; font.pixelSize: root.appFontSize+1 }
@@ -971,7 +977,7 @@ PlasmoidItem {
             }
 
             // ── Status bar ────────────────────────────────────────────────
-            Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3a"; Layout.topMargin: 10; Layout.bottomMargin: 6 }
+            Rectangle { Layout.fillWidth: true; height: 1; color: root.bgDivider; Layout.topMargin: 10; Layout.bottomMargin: 6 }
             RowLayout {
                 Layout.fillWidth: true; Layout.bottomMargin: 6; spacing: 6
 
