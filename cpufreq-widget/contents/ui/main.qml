@@ -30,16 +30,21 @@ PlasmoidItem {
     property bool   applyingMax:    false
     property bool   applyingCores:  false
     property bool   applyingTurbo:  false
+    property bool   applyingGov:     false
+    property bool   applyingProfile: false
 
     // Target values the user requested — compared against poll to confirm
     property real   targetMin:      -1
     property real   targetMax:      -1
     property int    targetCores:    -1
     property bool   targetTurbo:    false
+    property string targetGov:       ""
+    property string targetProfile:   ""
     property real   loadPercent:    0
     property real   memPercent:     0
     property bool   turboEnabled:   false
     property string activeGovernor: "—"
+    property string activeProfile:   "—"
     property var    governors:      []
     property var    profiles:       []
     property var    coreFreqs:      []
@@ -100,6 +105,15 @@ PlasmoidItem {
     ]
 
     // ── persistent settings ───────────────────────────────────────────────────
+    // ── saved CPU state (persisted, re-applied on startup if rememberSettings) ──
+    property string savedGovernor:   ""
+    property real   savedFreqMin:    0
+    property real   savedFreqMax:    0
+    property int    savedCores:      0
+    property bool   savedTurbo:      false
+    property bool   restoringOnBoot: false   // true during restore window — polls must not overwrite saved values
+    readonly property bool anyApplying: applyingMin || applyingMax || applyingCores || applyingTurbo || applyingGov || applyingProfile
+
     Settings {
         id: savedSettings
         category: "kcpufreq"
@@ -113,6 +127,12 @@ PlasmoidItem {
         property alias rememberSettings: root.rememberSettings
         property alias graphSize:        root.graphSize
         property alias bgStyle:          root.bgStyle
+        // CPU state
+        property alias savedGovernor:    root.savedGovernor
+        property alias savedFreqMin:     root.savedFreqMin
+        property alias savedFreqMax:     root.savedFreqMax
+        property alias savedCores:       root.savedCores
+        property alias savedTurbo:       root.savedTurbo
     }
 
     // ── DataSource: read ──────────────────────────────────────────────────────
@@ -152,12 +172,20 @@ PlasmoidItem {
             var p = out.split(/\s+/).filter(function(s){ return s.length > 0 })
             if (p.length > 0) root.profiles = p
         }
+        else if (name === "profile") {
+            if (out) {
+                root.activeProfile = out
+                if (root.applyingProfile && out === root.targetProfile)
+                    root.applyingProfile = false
+            }
+        }
         else if (name === "freqMin")    { var v1 = parseFloat(out)/1000; if (v1>0) root.freqMin    = v1 }
         else if (name === "freqMax")    { var v2 = parseFloat(out)/1000; if (v2>0) root.freqMax    = v2 }
         else if (name === "freqMinSet") {
             var v3 = parseFloat(out)/1000
             if (v3 > 0) {
                 root.freqMinSet = v3
+                if (root.rememberSettings && !root.restoringOnBoot) root.savedFreqMin = v3
                 if (root.applyingMin && Math.abs(v3 - root.targetMin) < 50)
                     root.applyingMin = false
             }
@@ -166,14 +194,22 @@ PlasmoidItem {
             var v4 = parseFloat(out)/1000
             if (v4 > 0) {
                 root.freqMaxSet = v4
+                if (root.rememberSettings && !root.restoringOnBoot) root.savedFreqMax = v4
                 if (root.applyingMax && Math.abs(v4 - root.targetMax) < 50)
                     root.applyingMax = false
             }
         }
-        else if (name === "governor")   { if (out) root.activeGovernor = out }
+        else if (name === "governor") {
+            if (out) {
+                root.activeGovernor = out
+                if (root.rememberSettings && !root.restoringOnBoot) root.savedGovernor = out
+                if (root.applyingGov && out === root.targetGov) root.applyingGov = false
+            }
+        }
         else if (name === "turbo") {
             var turboOn = (out === "0")
             root.turboEnabled = turboOn
+            if (root.rememberSettings && !root.restoringOnBoot) root.savedTurbo = turboOn
             if (root.applyingTurbo && turboOn === root.targetTurbo)
                 root.applyingTurbo = false
         }
@@ -189,6 +225,7 @@ PlasmoidItem {
             var co = parseInt(out)
             if (!isNaN(co) && co > 0) {
                 root.coresOnline = co
+                if (root.rememberSettings && !root.restoringOnBoot) root.savedCores = co
                 if (root.applyingCores && co === root.targetCores)
                     root.applyingCores = false
             }
@@ -220,7 +257,8 @@ PlasmoidItem {
         fetch("cpuDriver",   "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver 2>/dev/null || echo N/A")
         fetch("coreCount",   "nproc --all")
         fetch("governors",   "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors 2>/dev/null || true")
-        fetch("profiles",    "cat /sys/firmware/acpi/platform_profile_choices 2>/dev/null || echo 'powersave balanced performance'")
+        fetch("profiles",    "powerprofilesctl list 2>/dev/null | awk '/^[\\* ]*[a-z]/{gsub(/^\\* /,\"\"); gsub(/:/,\"\"); if($1!~/PlatformDriver/)print $1}' || echo 'balanced power-saver performance'")
+        fetch("profile",     "powerprofilesctl list 2>/dev/null | awk '/^\\* /{gsub(/^\\* /,\"\"); gsub(/:/,\"\"); print $1}' || echo ''")
         fetch("freqMin",     "cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq 2>/dev/null || echo 0")
         fetch("freqMax",     "cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq 2>/dev/null || echo 0")
         fetch("freqMinSet",  "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 2>/dev/null || echo 0")
@@ -242,9 +280,42 @@ PlasmoidItem {
         repeat: true; running: true
         onTriggered: { fetchAll(); historyTimer.restart() }
     }
+    // Restore timer — fires once on startup after kernel settles, re-applies saved CPU state
+    Timer {
+        id: restoreTimer
+        interval: 5000   // 5s — gives kernel and cpupower time to be ready after boot
+        repeat: false
+        running: false
+        onTriggered: {
+            if (!root.rememberSettings || root.savedGovernor === "") return
+            applyGovernor(root.savedGovernor)
+            if (root.savedFreqMin > 0) applyMinFreq(root.savedFreqMin)
+            if (root.savedFreqMax > 0) applyMaxFreq(root.savedFreqMax)
+            if (root.savedCores > 0 && root.coreCount > 0 && root.savedCores < root.coreCount)
+                applyCoresOnline(root.savedCores)
+            applyTurbo(root.savedTurbo)
+            // After another 3s the kernel will have applied changes — safe to allow saving again
+            restoreDoneTimer.start()
+        }
+    }
+
+    Timer {
+        id: restoreDoneTimer
+        interval: 3000
+        repeat: false
+        running: false
+        onTriggered: { root.restoringOnBoot = false }
+    }
+
     onRefreshSecsChanged: { pollTimer.stop(); pollTimer.interval = root.refreshSecs * 1000; pollTimer.start() }
+
     Component.onCompleted: {
         root.histTemp = []; root.histLoad = []; root.histFreq = []
+        // If we have saved CPU state to restore, lock saves before first poll runs
+        if (root.rememberSettings && root.savedGovernor !== "") {
+            root.restoringOnBoot = true
+            restoreTimer.start()
+        }
         fetchAll()
         historyTimer.restart()
     }
@@ -273,8 +344,15 @@ PlasmoidItem {
     }
 
     function applyGovernor(gov) {
+        root.targetGov = gov
+        root.applyingGov = true
         var n = root.coreCount > 0 ? root.coreCount : 8
         for (var i = 0; i < n; i++) runCmd("pkexec cpupower -c " + i + " frequency-set -g " + gov)
+    }
+    function applyProfile(profile) {
+        root.targetProfile = profile
+        root.applyingProfile = true
+        runCmd("powerprofilesctl set " + profile)
     }
     function applyMinFreq(mhz) {
         var safeMhz = Math.round(Math.max(root.freqMin > 0 ? root.freqMin : 400, mhz))
@@ -398,6 +476,29 @@ PlasmoidItem {
         height: Math.min(outerCol.implicitHeight + 24, 740)
 
         Rectangle { anchors.fill: parent; color: root.bgStyle === "solid" ? "#2a2a2a" : "transparent"; radius: 8 }
+
+        // ── Full-widget applying overlay ──────────────────────────────────
+        Rectangle {
+            anchors.fill: parent
+            radius: 8
+            color: Qt.rgba(0, 0, 0, 0.45)
+            visible: root.anyApplying
+            z: 100
+            Behavior on opacity { NumberAnimation { duration: 150 } }
+
+            QQC2.BusyIndicator {
+                anchors.centerIn: parent
+                running: root.anyApplying
+                width: 48; height: 48
+            }
+            Text {
+                anchors { horizontalCenter: parent.horizontalCenter; top: parent.verticalCenter; topMargin: 32 }
+                text: "Applying…"
+                color: "white"
+                font.pixelSize: root.appFontSize
+                font.bold: true
+            }
+        }
 
         ColumnLayout {
             id: outerCol
@@ -587,12 +688,12 @@ PlasmoidItem {
                         QQC2.ComboBox { flat: true
                             implicitWidth: 128; font.pixelSize: root.appFontSize
                             model: root.profiles.length > 0 ? root.profiles : ["powersave","balanced","performance"]
-                            currentIndex: Math.max(0, model.indexOf(root.activeGovernor))
+                            currentIndex: Math.max(0, model.indexOf(root.activeProfile))
                             contentItem: Text { text: parent.displayText; color: "white"; font.pixelSize: root.appFontSize; verticalAlignment: Text.AlignVCenter; leftPadding: 6 }
                             palette.button: root.bgControl
                             background: Rectangle { color: "transparent"; border.color: root.bgBorder; border.width: 1; radius: 3 }
                             popup.background: Rectangle { color: root.bgPopup; border.color: root.bgBorder; radius: 3 }
-                            onActivated: function(i) { applyGovernor(model[i]) }
+                            onActivated: function(i) { applyProfile(model[i]) }
                         }
                     }
 
@@ -620,13 +721,10 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         Text { text: "Minimum"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; font.family: root.appFontFamily }
                         Item { Layout.fillWidth: true }
-                        QQC2.BusyIndicator { running: root.applyingMin; width: root.appFontSize+4; height: root.appFontSize+4; visible: root.applyingMin }
                         Text { text: root.freqMinSet>=1000?(root.freqMinSet/1000).toFixed(3)+" GHz":root.freqMinSet.toFixed(0)+" MHz"; color: "#aaaaaa"; font.pixelSize: root.appFontSize }
                     }
                     QQC2.Slider {
                         id: sMin; Layout.fillWidth: true
-                        enabled: !root.applyingMin
-                        opacity: root.applyingMin ? 0.4 : 1.0
                         from: root.freqMin>0?root.freqMin:400
                         to:   root.freqMax>0?root.freqMax:5000
                         value: root.freqMinSet>0?root.freqMinSet:(root.freqMin>0?root.freqMin:400)
@@ -641,13 +739,10 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         Text { text: "Maximum"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; font.family: root.appFontFamily }
                         Item { Layout.fillWidth: true }
-                        QQC2.BusyIndicator { running: root.applyingMax; width: root.appFontSize+4; height: root.appFontSize+4; visible: root.applyingMax }
                         Text { text: root.freqMaxSet>=1000?(root.freqMaxSet/1000).toFixed(3)+" GHz":root.freqMaxSet.toFixed(0)+" MHz"; color: "#aaaaaa"; font.pixelSize: root.appFontSize }
                     }
                     QQC2.Slider {
                         id: sMax; Layout.fillWidth: true
-                        enabled: !root.applyingMax
-                        opacity: root.applyingMax ? 0.4 : 1.0
                         from: root.freqMin>0?root.freqMin:400
                         to:   root.freqMax>0?root.freqMax:5000
                         value: root.freqMaxSet>0?root.freqMaxSet:(root.freqMax>0?root.freqMax:5000)
@@ -662,13 +757,10 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         Text { text: "Cores Online"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; font.family: root.appFontFamily }
                         Item { Layout.fillWidth: true }
-                        QQC2.BusyIndicator { running: root.applyingCores; width: root.appFontSize+4; height: root.appFontSize+4; visible: root.applyingCores }
                         Text { text: root.coresOnline; color: "#aaaaaa"; font.pixelSize: root.appFontSize }
                     }
                     QQC2.Slider {
                         id: sCores; Layout.fillWidth: true
-                        enabled: !root.applyingCores
-                        opacity: root.applyingCores ? 0.4 : 1.0
                         from: 1; to: root.coreCount>0?root.coreCount:8
                         value: root.coresOnline
                         stepSize: 1; live: false
@@ -687,10 +779,8 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         Text { text: "Turbo Boost"; color: "#aaaaaa"; font.pixelSize: root.appFontSize; font.family: root.appFontFamily }
                         Item { Layout.fillWidth: true }
-                        QQC2.BusyIndicator { running: root.applyingTurbo; width: root.appFontSize+4; height: root.appFontSize+4; visible: root.applyingTurbo }
                         Rectangle {
                             width: 56; height: root.appFontSize+10; radius: 4
-                            opacity: root.applyingTurbo ? 0.4 : 1.0
                             color: root.turboEnabled ? root.bgTurboOn : root.bgTurboOff
                             border.color: root.turboEnabled ? "#44aa33" : "#555"
                             Behavior on color { ColorAnimation { duration: 200 } }
@@ -698,7 +788,6 @@ PlasmoidItem {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                enabled: !root.applyingTurbo
                                 onClicked: {
                                     root.targetTurbo = !root.turboEnabled
                                     root.applyingTurbo = true
