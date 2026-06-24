@@ -20,7 +20,7 @@ A KDE Plasma 6 widget for CPU frequency and power management on Arch Linux / Gar
 - Configurable font family and size for titlebar and application
 - Optional CPU frequency display in taskbar
 - Adjustable refresh rate (1–30s)
-- Settings persist across sessions
+- Settings persist across sessions, restored on boot
 
 ## Requirements
 
