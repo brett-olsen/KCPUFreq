@@ -3,17 +3,17 @@
         "Authors": [
             {
                 "Email": "",
-                "Name": "KCpuFreq"
+                "Name": "Brett Olsen"
             }
         ],
         "Category": "System Information",
         "Description": "CPU Frequency and Power Management widget for KDE Plasma 6. Controls governor, frequency limits, cores online, and turbo boost via the cpufreq backend.",
         "Icon": "kcpufreq",
         "Id": "org.kde.plasma.kcpufreq",
-        "License": "GPL-3.0-only",
+        "License": "MIT License",
         "Name": "KCpuFreq",
         "Version": "1.0.0",
-        "Website": "https://github.com/konkor/cpufreq"
+        "Website": "https://github.com/brett-olsen/KCPUFreq"
     },
     "X-Plasma-API-Minimum-Version": "6.0"
 }
