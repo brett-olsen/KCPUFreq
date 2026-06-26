@@ -21,7 +21,7 @@ A KDE Plasma 6 widget for CPU frequency and power management on Arch Linux / Gar
 - Optional CPU frequency display in taskbar
 - Adjustable refresh rate (1–30s)
 - Settings persist across sessions, restored on boot
-
+<br><br>
 **Coming Soon** - Realtime per-application perfomance profiles!
 
 ## Requirements
